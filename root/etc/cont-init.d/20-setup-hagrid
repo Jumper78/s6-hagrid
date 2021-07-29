@@ -1,0 +1,32 @@
+#!/usr/bin/with-contenv bash
+
+set -e
+
+mkdir -p /data
+chown abc:abc /data
+
+config="/data/Rocket.toml"
+
+if [[ ! -f "$config" ]]; then
+  cp /default/Rocket.toml "$config"
+fi
+
+PORT=${PORT:-8080}
+BIND=${ABC:-0.0.0.0}
+
+# global
+sed -i "s#%%PORT%%#$PORT#g" "$config"
+sed -i "s#%%BIND%%#$BIND#g" "$config"
+
+# production
+sed -i "s#%%BASE_URI%%#$BASE_URI#g" "$config"
+sed -i "s#%%TOKEN_SECRET%%#$TOKEN_SECRET#g" "$config"
+
+if [[ -n "$FROM_EMAIL" ]]; then
+  sed -i "s#%%FROM_EMAIL%%#$FROM_EMAIL#g" "$config"
+else
+  sed -i "s#%%FROM_EMAIL%%#$FROM_EMAIL#g" "$config"
+fi
+
+# fix branding
+grep -rln "keys.openpgp.org" /app/dist/ | xargs sed -i "s#keys.openpgp.org#$HOST#"

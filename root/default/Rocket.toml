@@ -1,0 +1,21 @@
+[global]
+address = "%%BIND%%"
+port = %%PORT%%
+
+[production]
+base-URI = "%%BASE_URI%%"
+base-URI-Onion = "%%BASE_URI%%"
+from = "%%FROM_EMAIL%%"
+x-accel-redirect = true
+token_secret = "%%TOKEN_SECRET%%"
+token_validity = 3600
+template_dir = "/app/dist/templates"
+keys_internal_dir = "keys"
+keys_external_dir = "public/keys"
+assets_dir = "/app/dist/assets"
+token_dir = "tokens"
+tmp_dir = "tmp"
+mail_rate_limit = 3600
+maintenance_file = "maintenance"
+enable_prometheus = false
+email_template_dir = "/app/dist/email-templates"

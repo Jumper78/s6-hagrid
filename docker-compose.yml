@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  hagrid:
+    image: andrewzah/hagrid
+    build: .
+    environment:
+      # required
+      HOST: 'pgp.foo.bar'
+      BASE_URI: 'https://pgp.foo.bar'
+      TOKEN_SECRET: 'abcd'
+      # optional
+      BIND: '0.0.0.0'
+      PORT: 8080
+    ports:
+      - "8080"
+      - "11371"

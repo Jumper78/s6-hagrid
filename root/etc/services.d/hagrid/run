@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd /data
+
+exec s6-setuidgid abc /usr/local/bin/hagrid
