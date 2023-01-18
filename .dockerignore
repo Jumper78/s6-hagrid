@@ -1,4 +1,5 @@
+.DS_Store
 Dockerfile
 docker-compose.yml
 LICENSE
-./data
+data
