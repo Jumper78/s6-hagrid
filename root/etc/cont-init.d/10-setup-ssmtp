@@ -1,0 +1,21 @@
+#!/usr/bin/with-contenv bash
+
+set -e
+
+config="/etc/ssmtp/ssmtp.conf"
+rm "$config"
+
+if [[ ! -f "$config" ]]; then
+  cp /default/ssmtp.conf "$config"
+fi
+
+MAILPORT=${MAILPORT:-465}
+
+# mailserver
+sed -i "s#%%MAILPORT%%#$MAILPORT#g" "$config"
+sed -i "s#%%MAILHUB%%#$MAILHUB#g" "$config"
+sed -i "s#%%MAILDOMAIN%%#$MAILDOMAIN#g" "$config"
+
+# mailuser
+sed -i "s#%%MAILUSER%%#$MAILUSER#g" "$config"
+sed -i "s#%%MAILPASS%%#$MAILPASS#g" "$config"

@@ -7,11 +7,19 @@ services:
     environment:
       # required
       HOST: 'pgp.foo.bar'
-      BASE_URI: 'https://pgp.foo.bar'
+      BASE_URI: 'https://pgp.foo.bar:8080'
       TOKEN_SECRET: 'abcd'
+      FROM_EMAIL: 'test@foo.bar'
+      MAILHUB: 'mail.foo.bar'
+      MAILDOMAIN: 'foo.bar'
+      MAILUSER: 'test@foo.bar'
+      MAILPASS: 'password'
       # optional
       BIND: '0.0.0.0'
       PORT: 8080
+      MAILPORT: '465'
+    volumes:
+      - ./data:/data
     ports:
-      - "8080"
-      - "11371"
+      - "8080:8080"
+      - "11371:8080"

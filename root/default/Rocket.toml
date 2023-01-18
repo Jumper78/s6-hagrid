@@ -2,7 +2,6 @@
 address = "%%BIND%%"
 port = %%PORT%%
 
-[production]
 base-URI = "%%BASE_URI%%"
 base-URI-Onion = "%%BASE_URI%%"
 from = "%%FROM_EMAIL%%"
