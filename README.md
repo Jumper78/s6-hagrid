@@ -1,4 +1,4 @@
-[![Docker Pulls](https://img.shields.io/docker/pulls/andrewzah/hagrid)](https://hub.docker.com/r/andrewzah/hagrid)
+[![Docker Pulls](https://img.shields.io/docker/pulls/jumper78/hagrid-openpgp)](https://hub.docker.com/r/jumper78/hagrid-openpgp)
 
 ## about
 
