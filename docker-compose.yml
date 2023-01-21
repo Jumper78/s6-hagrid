@@ -2,8 +2,7 @@ version: '3.7'
 
 services:
   hagrid:
-    image: andrewzah/hagrid
-    build: .
+    image: jumper78/hagrid-openpgp
     environment:
       # required
       HOST: 'pgp.foo.bar'
