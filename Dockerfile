@@ -23,6 +23,10 @@ RUN apt update -y \
 # add S6 overlays
 ARG OVERLAY_VERSION="v3.1.2.1"
 ARG OVERLAY_ARCH="x86_64"
+RUN case ${TARGETARCH} in \
+      "amd64")  OVERLAY_ARCH=amd64  ;; \
+      "arm64")  OVERLAY_ARCH=aarch64  ;; \
+    esac
 ADD https://github.com/just-containers/s6-overlay/releases/download/${OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
 RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
 ADD https://github.com/just-containers/s6-overlay/releases/download/${OVERLAY_VERSION}/s6-overlay-${OVERLAY_ARCH}.tar.xz /tmp
