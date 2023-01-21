@@ -17,7 +17,7 @@ RUN git clone https://gitlab.com/hagrid-keyserver/hagrid.git /build
 RUN cd /build/ \
   && cargo build --release
 
-FROM debian:bullseye-slim
+FROM debian:stable-slim
 
 RUN apt update -y \
   && apt install -y --no-install-recommends \
