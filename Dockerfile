@@ -13,8 +13,6 @@ RUN apt update -y \
     gettext \
   && rm -rf /var/lib/apt/lists/*
 
-gnutls-bin nettle-dev gcc llvm-dev libclang-dev build-essential pkg-config gettext
-
 RUN git clone https://gitlab.com/hagrid-keyserver/hagrid.git /build
 RUN cd /build/ \
   && cargo build --release
