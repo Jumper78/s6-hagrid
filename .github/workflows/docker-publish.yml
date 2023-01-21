@@ -24,12 +24,12 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
-      - name: Run Docker on tmpfs
-        uses: JonasAlfredsson/docker-on-tmpfs@v1
-        with:
-          tmpfs_size: 5
-          swap_size: 4
-          swap_location: '/mnt/swapfile'
+#      - name: Run Docker on tmpfs
+#        uses: JonasAlfredsson/docker-on-tmpfs@v1
+#        with:
+#          tmpfs_size: 5
+#          swap_size: 4
+#          swap_location: '/mnt/swapfile'
       
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
@@ -47,7 +47,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
