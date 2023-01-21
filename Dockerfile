@@ -1,4 +1,3 @@
-# syntax = docker/dockerfile:experimental
 FROM rust as builder
 MAINTAINER Jens Dorfmueller
 
@@ -10,10 +9,7 @@ RUN apt update -y \
   && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://gitlab.com/hagrid-keyserver/hagrid.git /build
-RUN --security=insecure mkdir -p /root/.cargo \
-  && chmod 777 /root/.cargo \
-  && mount -t tmpfs none /root/.cargo \
-  && cd /build/ \
+RUN cd /build/ \
   && cargo build --release
 
 FROM debian:bullseye-slim
