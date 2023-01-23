@@ -1,0 +1,47 @@
+version: '3.7'
+
+services:
+  hagrid:
+    image: jumper78/hagrid-openpgp
+    environment:
+      # required
+      HOST: 'pgp.foo.bar'
+      BASE_URI: 'https://pgp.foo.bar:8080'
+      TOKEN_SECRET: 'abcd'
+      FROM_EMAIL: 'test@foo.bar'
+      MAILHUB: 'mail.foo.bar'
+      MAILDOMAIN: 'foo.bar'
+      MAILUSER: 'test@foo.bar'
+      MAILPASS: 'password'
+      # optional
+      BIND: '0.0.0.0'
+      PORT: 8080
+      MAILPORT: '465'
+    volumes:
+      - ./data:/data
+    ports:
+      - "8080"
+      - "11371:8080"
+    networks:
+      web:
+    labels:
+      - "traefik.http.routers.keys-http.entrypoints=web"
+      - "traefik.http.routers.keys-http.rule=Host(`pgp.foo.bar`)"
+      - "traefik.http.services.keys-http.loadbalancer.server.port=8080"
+      - "traefik.http.routers.keys-ssl.entrypoints=websecure"
+      - "traefik.http.routers.keys-ssl.rule=Host(`pgp.foo.bar`)"
+      - "traefik.http.routers.keys-ssl.tls=true"
+      - "traefik.http.routers.keys-ssl.tls.certresolver=le"
+      # add CORS headers
+      - "traefik.http.routers.keys-ssl.middlewares=keys-ssl"
+      - "traefik.http.middlewares.keys-ssl.headers.accesscontrolallowmethods=GET,OPTIONS,PUT"
+      - "traefik.http.middlewares.keys-ssl.headers.accesscontrolalloworiginlist=*"
+      - "traefik.http.middlewares.keys-ssl.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.keys-ssl.headers.addvaryheader=true"
+      # traefik: change the following line to your external docker network
+      - "traefik.docker.network=web"
+
+networks:
+  # traefik: change the following line to your external docker network 
+  web:
+    external: true
