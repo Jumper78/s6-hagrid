@@ -2,6 +2,6 @@
 
 ## about
 
-hagrid, with s6
+[Hagrid](https://gitlab.com/hagrid-keyserver/hagrid) (as in, "keeper of keys": a verifying OpenPGP keyserver, written in Rust) with s6 as docker container.
 
-see the [example compose.yml](./docker-compose.yml) to get started.
+See the [example docker-compose.yml](./docker-compose-examples/docker-compose.yml) to get started!
