@@ -12,21 +12,24 @@ if [[ ! -f "$config" ]]; then
 fi
 
 PORT=${PORT:-8080}
-BIND=${ABC:-0.0.0.0}
+BIND=${BIND:-0.0.0.0}
 
 # global
-sed -i "s#%%PORT%%#$PORT#g" "$config"
-sed -i "s#%%BIND%%#$BIND#g" "$config"
+sed -i "s#%%PORT%%#${PORT}#g" "$config"
+sed -i "s#%%BIND%%#${BIND}#g" "$config"
 
 # production
-sed -i "s#%%BASE_URI%%#$BASE_URI#g" "$config"
-sed -i "s#%%TOKEN_SECRET%%#$TOKEN_SECRET#g" "$config"
+sed -i "s#%%BASE_URI%%#${BASE_URI}#g" "$config"
+sed -i "s#%%TOKEN_SECRET%%#${TOKEN_SECRET}#g" "$config"
 
 if [[ -n "$FROM_EMAIL" ]]; then
-  sed -i "s#%%FROM_EMAIL%%#$FROM_EMAIL#g" "$config"
+  sed -i "s#%%FROM_EMAIL%%#${FROM_EMAIL}#g" "$config"
 else
-  sed -i "s#%%FROM_EMAIL%%#$FROM_EMAIL#g" "$config"
+  echo "WARNING: FROM_EMAIL is not set, removing placeholder from config"
+  sed -i "s#%%FROM_EMAIL%%##g" "$config"
 fi
 
 # fix branding
-grep -rln "keys.openpgp.org" /app/dist/ | xargs sed -i "s#keys.openpgp.org#$HOST#"
+if [[ -n "$HOST" ]]; then
+  grep -rln "keys.openpgp.org" /app/dist/ | xargs -r -d '\n' sed -i "s#keys\\.openpgp\\.org#${HOST}#g"
+fi
