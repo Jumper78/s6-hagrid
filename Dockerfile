@@ -23,6 +23,7 @@ RUN apt-get update -y \
   && apt-get install -y --no-install-recommends \
     xz-utils \
     ca-certificates \
+    wget \
     msmtp msmtp-mta \
   && rm -rf /var/lib/apt/lists/*
 
