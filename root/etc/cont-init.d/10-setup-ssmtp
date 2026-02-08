@@ -2,20 +2,19 @@
 
 set -e
 
-config="/etc/ssmtp/ssmtp.conf"
-rm "$config"
+config="/etc/msmtprc"
 
 if [[ ! -f "$config" ]]; then
-  cp /default/ssmtp.conf "$config"
+  cp /default/msmtprc "$config"
 fi
 
 MAILPORT=${MAILPORT:-465}
 
 # mailserver
-sed -i "s#%%MAILPORT%%#$MAILPORT#g" "$config"
-sed -i "s#%%MAILHUB%%#$MAILHUB#g" "$config"
-sed -i "s#%%MAILDOMAIN%%#$MAILDOMAIN#g" "$config"
+sed -i "s#%%MAILPORT%%#${MAILPORT}#g" "$config"
+sed -i "s#%%MAILHUB%%#${MAILHUB}#g" "$config"
+sed -i "s#%%MAILDOMAIN%%#${MAILDOMAIN}#g" "$config"
 
 # mailuser
-sed -i "s#%%MAILUSER%%#$MAILUSER#g" "$config"
-sed -i "s#%%MAILPASS%%#$MAILPASS#g" "$config"
+sed -i "s#%%MAILUSER%%#${MAILUSER}#g" "$config"
+sed -i "s#%%MAILPASS%%#${MAILPASS}#g" "$config"
