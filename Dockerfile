@@ -1,10 +1,11 @@
-FROM rust as builder
+# Builder runs on the build platform natively (no QEMU) and cross-compiles for arm64
+FROM --platform=$BUILDPLATFORM rust as builder
 LABEL org.opencontainers.image.authors="Jens Dorfmueller"
 
-# Disable HTTP pipelining and add retries to fix apt under QEMU emulation
-RUN echo 'Acquire::http::Pipeline-Depth "0";' > /etc/apt/apt.conf.d/99qemu-fix \
-  && echo 'Acquire::Retries "3";' >> /etc/apt/apt.conf.d/99qemu-fix \
-  && apt-get update -y \
+ARG TARGETARCH
+
+# Install native build dependencies
+RUN apt-get update -y \
   && apt-get install -y --no-install-recommends \
     gnutls-bin \
     nettle-dev \
@@ -16,9 +17,33 @@ RUN echo 'Acquire::http::Pipeline-Depth "0";' > /etc/apt/apt.conf.d/99qemu-fix \
     gettext \
   && rm -rf /var/lib/apt/lists/*
 
+# Set up cross-compilation toolchain for arm64
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+      dpkg --add-architecture arm64 \
+      && apt-get update -y \
+      && apt-get install -y --no-install-recommends \
+        gcc-aarch64-linux-gnu \
+        libc6-dev-arm64-cross \
+        nettle-dev:arm64 \
+      && rm -rf /var/lib/apt/lists/* \
+      && rustup target add aarch64-unknown-linux-gnu \
+      && mkdir -p /root/.cargo \
+      && printf '[target.aarch64-unknown-linux-gnu]\nlinker = "aarch64-linux-gnu-gcc"\n' > /root/.cargo/config.toml; \
+    fi
+
 RUN git clone --branch v2.1.0 --depth 1 https://gitlab.com/hagrid-keyserver/hagrid.git /build
+
+# Build hagrid for target architecture
 RUN cd /build/ \
-  && cargo build --release
+  && if [ "$TARGETARCH" = "arm64" ]; then \
+       export PKG_CONFIG_ALLOW_CROSS=1; \
+       export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig; \
+       export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc; \
+       cargo build --release --target aarch64-unknown-linux-gnu \
+       && cp target/aarch64-unknown-linux-gnu/release/hagrid target/release/; \
+     else \
+       cargo build --release; \
+     fi
 
 FROM debian:stable-slim
 
