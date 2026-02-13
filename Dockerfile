@@ -1,7 +1,10 @@
 FROM rust as builder
 LABEL org.opencontainers.image.authors="Jens Dorfmueller"
 
-RUN apt-get update -y \
+# Disable HTTP pipelining and add retries to fix apt under QEMU emulation
+RUN echo 'Acquire::http::Pipeline-Depth "0";' > /etc/apt/apt.conf.d/99qemu-fix \
+  && echo 'Acquire::Retries "3";' >> /etc/apt/apt.conf.d/99qemu-fix \
+  && apt-get update -y \
   && apt-get install -y --no-install-recommends \
     gnutls-bin \
     nettle-dev \
@@ -19,7 +22,10 @@ RUN cd /build/ \
 
 FROM debian:stable-slim
 
-RUN apt-get update -y \
+# Disable HTTP pipelining and add retries to fix apt under QEMU emulation
+RUN echo 'Acquire::http::Pipeline-Depth "0";' > /etc/apt/apt.conf.d/99qemu-fix \
+  && echo 'Acquire::Retries "3";' >> /etc/apt/apt.conf.d/99qemu-fix \
+  && apt-get update -y \
   && apt-get install -y --no-install-recommends \
     xz-utils \
     ca-certificates \
