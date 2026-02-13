@@ -23,23 +23,27 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
       && apt-get update -y \
       && apt-get install -y --no-install-recommends \
         gcc-aarch64-linux-gnu \
+        g++-aarch64-linux-gnu \
         libc6-dev-arm64-cross \
         nettle-dev:arm64 \
+        libgmp-dev:arm64 \
       && rm -rf /var/lib/apt/lists/* \
-      && rustup target add aarch64-unknown-linux-gnu \
-      && mkdir -p /root/.cargo \
-      && printf '[target.aarch64-unknown-linux-gnu]\nlinker = "aarch64-linux-gnu-gcc"\n' > /root/.cargo/config.toml; \
+      && rustup target add aarch64-unknown-linux-gnu; \
     fi
 
 RUN git clone --branch v2.1.0 --depth 1 https://gitlab.com/hagrid-keyserver/hagrid.git /build
 
 # Build hagrid for target architecture
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
 RUN cd /build/ \
   && if [ "$TARGETARCH" = "arm64" ]; then \
-       export PKG_CONFIG_ALLOW_CROSS=1; \
-       export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig; \
-       export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc; \
+       PKG_CONFIG_ALLOW_CROSS=1 \
+       PKG_CONFIG_PATH_aarch64_unknown_linux_gnu=/usr/lib/aarch64-linux-gnu/pkgconfig \
+       PKG_CONFIG_SYSROOT_DIR=/ \
+       CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc \
+       CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++ \
        cargo build --release --target aarch64-unknown-linux-gnu \
+       && mkdir -p target/release \
        && cp target/aarch64-unknown-linux-gnu/release/hagrid target/release/; \
      else \
        cargo build --release; \
