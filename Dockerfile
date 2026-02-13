@@ -4,8 +4,14 @@ LABEL org.opencontainers.image.authors="Jens Dorfmueller"
 
 ARG TARGETARCH
 
-# Install native build dependencies
-RUN apt-get update -y \
+# Install all build dependencies in a single RUN to ensure consistent package
+# versions across architectures. Multi-Arch: same packages (like nettle-dev)
+# require identical versions for amd64 and arm64 — splitting into separate RUN
+# commands with separate apt-get update calls can cause version mismatches.
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+      dpkg --add-architecture arm64; \
+    fi \
+  && apt-get update -y \
   && apt-get install -y --no-install-recommends \
     gnutls-bin \
     nettle-dev \
@@ -15,25 +21,16 @@ RUN apt-get update -y \
     build-essential \
     pkg-config \
     gettext \
+  && if [ "$TARGETARCH" = "arm64" ]; then \
+       apt-get install -y --no-install-recommends \
+         gcc-aarch64-linux-gnu \
+         g++-aarch64-linux-gnu \
+         libc6-dev-arm64-cross \
+         nettle-dev:arm64 \
+         libgmp-dev:arm64 \
+       && rustup target add aarch64-unknown-linux-gnu; \
+     fi \
   && rm -rf /var/lib/apt/lists/*
-
-# Set up cross-compilation toolchain for arm64
-# The rust image's apt sources restrict to amd64 only (Architectures: amd64).
-# We must remove that filter before apt can fetch arm64 packages.
-RUN if [ "$TARGETARCH" = "arm64" ]; then \
-      sed -i '/^Architectures:/d' /etc/apt/sources.list.d/*.sources 2>/dev/null || true \
-      && sed -i 's/\[arch=[a-z0-9]*\]//g' /etc/apt/sources.list 2>/dev/null || true \
-      && dpkg --add-architecture arm64 \
-      && apt-get update -y \
-      && apt-get install -y --no-install-recommends \
-        gcc-aarch64-linux-gnu \
-        g++-aarch64-linux-gnu \
-        libc6-dev-arm64-cross \
-        nettle-dev:arm64 \
-        libgmp-dev:arm64 \
-      && rm -rf /var/lib/apt/lists/* \
-      && rustup target add aarch64-unknown-linux-gnu; \
-    fi
 
 RUN git clone --branch v2.1.0 --depth 1 https://gitlab.com/hagrid-keyserver/hagrid.git /build
 
