@@ -18,8 +18,12 @@ RUN apt-get update -y \
   && rm -rf /var/lib/apt/lists/*
 
 # Set up cross-compilation toolchain for arm64
+# The rust image's apt sources restrict to amd64 only (Architectures: amd64).
+# We must remove that filter before apt can fetch arm64 packages.
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
-      dpkg --add-architecture arm64 \
+      sed -i '/^Architectures:/d' /etc/apt/sources.list.d/*.sources 2>/dev/null || true \
+      && sed -i 's/\[arch=[a-z0-9]*\]//g' /etc/apt/sources.list 2>/dev/null || true \
+      && dpkg --add-architecture arm64 \
       && apt-get update -y \
       && apt-get install -y --no-install-recommends \
         gcc-aarch64-linux-gnu \
