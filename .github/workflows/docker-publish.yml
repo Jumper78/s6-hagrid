@@ -16,12 +16,6 @@ jobs:
         uses: docker/setup-qemu-action@v3
         with:
           platforms: all
-      - name: Run Docker on tmpfs
-        uses: JonasAlfredsson/docker-on-tmpfs@v1.0.1
-        with:
-          tmpfs_size: 5
-          swap_size: 4
-          swap_location: '/mnt/swapfile'
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
         id: buildx
