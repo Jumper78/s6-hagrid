@@ -37,9 +37,10 @@ RUN git clone --branch v2.1.0 --depth 1 https://gitlab.com/hagrid-keyserver/hagr
 # xx-cargo sets CC, PKG_CONFIG, CARGO_TARGET_*_LINKER, and calls rustup target add automatically
 WORKDIR /build
 
-RUN export OPENSSL_DIR=$(xx-info sysroot)/usr \
-    && export OPENSSL_LIB_DIR=$(xx-info sysroot)/usr/lib \
-    && xx-cargo build --release \
+# xx-cargo sets up CC, CARGO_TARGET_*_LINKER, and PKG_CONFIG_* automatically.
+# No manual OPENSSL_DIR needed – pkg-config finds libssl-dev in the correct
+# Debian multiarch path (e.g. /usr/lib/aarch64-linux-gnu/) via xx.
+RUN xx-cargo build --release \
     && xx-verify target/$(xx-cargo --print-target-triple)/release/hagrid \
     && cp target/$(xx-cargo --print-target-triple)/release/hagrid /usr/local/bin/hagrid
 
@@ -54,6 +55,10 @@ RUN echo 'Acquire::http::Pipeline-Depth "0";' > /etc/apt/apt.conf.d/99qemu-fix \
     ca-certificates \
     wget \
     msmtp msmtp-mta \
+    libnettle8 \
+    libgmp10 \
+    libsqlite3-0 \
+    libssl3 \
   && rm -rf /var/lib/apt/lists/*
 
 # add S6 overlays (with checksum verification)
