@@ -15,6 +15,7 @@ services:
       BIND: '0.0.0.0'
       PORT: 8080
       MAILPORT: '465'
+      # MAIL_STARTTLS: 'off'  # auto-detected from MAILPORT (465=off, 587=on)
     volumes:
       - ./data:/data
     ports:
