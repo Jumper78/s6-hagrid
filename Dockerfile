@@ -27,7 +27,8 @@ ARG TARGETPLATFORM
 RUN xx-apt-get install -y --no-install-recommends \
     libc6-dev \
     nettle-dev \
-    libgmp-dev
+    libgmp-dev \
+    libssl-dev
 
 RUN git clone --branch v2.1.0 --depth 1 https://gitlab.com/hagrid-keyserver/hagrid.git /build
 
