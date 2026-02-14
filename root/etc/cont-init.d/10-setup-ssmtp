@@ -10,10 +10,20 @@ fi
 
 MAILPORT=${MAILPORT:-465}
 
+# auto-detect tls_starttls based on port (465 = implicit TLS, 587 = STARTTLS)
+if [[ -z "$MAIL_STARTTLS" ]]; then
+  if [[ "$MAILPORT" == "465" ]]; then
+    MAIL_STARTTLS="off"
+  else
+    MAIL_STARTTLS="on"
+  fi
+fi
+
 # mailserver
 sed -i "s#%%MAILPORT%%#${MAILPORT}#g" "$config"
 sed -i "s#%%MAILHUB%%#${MAILHUB}#g" "$config"
 sed -i "s#%%MAILDOMAIN%%#${MAILDOMAIN}#g" "$config"
+sed -i "s#%%TLS_STARTTLS%%#${MAIL_STARTTLS}#g" "$config"
 
 # mailuser
 sed -i "s#%%MAILUSER%%#${MAILUSER}#g" "$config"
