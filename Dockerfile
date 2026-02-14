@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libclang-dev \
     gettext \
     git \
-    ca-certificates
-
+    ca-certificates \
+    libssl-dev
 ARG TARGETPLATFORM
 
 # Install target-architecture libraries
