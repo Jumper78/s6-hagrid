@@ -4,9 +4,8 @@ set -e
 
 config="/etc/msmtprc"
 
-if [[ ! -f "$config" ]]; then
-  cp /default/msmtprc "$config"
-fi
+# always copy fresh template so env var changes take effect on restart
+cp /default/msmtprc "$config"
 
 MAILPORT=${MAILPORT:-465}
 
