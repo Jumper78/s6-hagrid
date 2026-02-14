@@ -25,6 +25,7 @@ ARG TARGETPLATFORM
 # Install target-architecture libraries
 # xx-apt-get handles dpkg --add-architecture and apt source configuration automatically
 RUN xx-apt-get install -y --no-install-recommends \
+    gcc \
     libc6-dev \
     nettle-dev \
     libgmp-dev \
@@ -40,6 +41,9 @@ WORKDIR /build
 # xx-cargo sets up CC, CARGO_TARGET_*_LINKER, and PKG_CONFIG_* automatically.
 # No manual OPENSSL_DIR needed – pkg-config finds libssl-dev in the correct
 # Debian multiarch path (e.g. /usr/lib/aarch64-linux-gnu/) via xx.
+# PKG_CONFIG_ALLOW_CROSS is required because the Rust pkg-config crate refuses
+# cross-compilation by default without it.
+ENV PKG_CONFIG_ALLOW_CROSS=1
 RUN xx-cargo build --release \
     && xx-verify target/$(xx-cargo --print-target-triple)/release/hagrid \
     && cp target/$(xx-cargo --print-target-triple)/release/hagrid /usr/local/bin/hagrid
