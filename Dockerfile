@@ -36,7 +36,9 @@ RUN git clone --branch v2.1.0 --depth 1 https://gitlab.com/hagrid-keyserver/hagr
 # Build hagrid for the target architecture
 # xx-cargo sets CC, PKG_CONFIG, CARGO_TARGET_*_LINKER, and calls rustup target add automatically
 WORKDIR /build
+
 RUN export OPENSSL_DIR=$(xx-info sysroot)/usr \
+    && export OPENSSL_LIB_DIR=$(xx-info sysroot)/usr/lib \
     && xx-cargo build --release \
     && xx-verify target/$(xx-cargo --print-target-triple)/release/hagrid \
     && cp target/$(xx-cargo --print-target-triple)/release/hagrid /usr/local/bin/hagrid
