@@ -25,6 +25,7 @@ ARG TARGETPLATFORM
 # Install target-architecture libraries
 # xx-apt-get handles dpkg --add-architecture and apt source configuration automatically
 RUN xx-apt-get install -y --no-install-recommends \
+    gcc \
     libc6-dev \
     nettle-dev \
     libgmp-dev \
