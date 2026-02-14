@@ -1,54 +1,44 @@
-# Builder runs on the build platform natively (no QEMU) and cross-compiles for arm64
-FROM --platform=$BUILDPLATFORM rust as builder
+# xx provides cross-compilation helpers (xx-apt-get, xx-cargo, xx-verify)
+FROM --platform=$BUILDPLATFORM tonistiigi/xx:1.9.0 AS xx
+
+# Builder runs natively on the build platform and cross-compiles via clang/lld
+FROM --platform=$BUILDPLATFORM rust:slim-bookworm AS builder
+COPY --from=xx / /
 LABEL org.opencontainers.image.authors="Jens Dorfmueller"
 
-ARG TARGETARCH
-
-# Install all build dependencies in a single RUN to ensure consistent package
-# versions across architectures. Multi-Arch: same packages (like nettle-dev)
-# require identical versions for amd64 and arm64 — splitting into separate RUN
-# commands with separate apt-get update calls can cause version mismatches.
-RUN if [ "$TARGETARCH" = "arm64" ]; then \
-      dpkg --add-architecture arm64; \
-    fi \
-  && apt-get update -y \
-  && apt-get install -y --no-install-recommends \
-    gnutls-bin \
-    nettle-dev \
-    gcc \
+# Install native build tools (run on build platform)
+# Using rust:slim-bookworm instead of rust:bookworm to avoid pre-installed
+# amd64 -dev packages from buildpack-deps that conflict with arm64 multiarch.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    clang \
+    lld \
+    make \
+    pkg-config \
     llvm-dev \
     libclang-dev \
-    build-essential \
-    pkg-config \
     gettext \
-  && if [ "$TARGETARCH" = "arm64" ]; then \
-       apt-get install -y --no-install-recommends \
-         gcc-aarch64-linux-gnu \
-         g++-aarch64-linux-gnu \
-         libc6-dev-arm64-cross \
-         nettle-dev:arm64 \
-         libgmp-dev:arm64 \
-       && rustup target add aarch64-unknown-linux-gnu; \
-     fi \
-  && rm -rf /var/lib/apt/lists/*
+    git \
+    ca-certificates
+
+ARG TARGETPLATFORM
+
+# Install target-architecture libraries
+# xx-apt-get handles dpkg --add-architecture and apt source configuration automatically
+RUN xx-apt-get install -y --no-install-recommends \
+    libc6-dev \
+    nettle-dev \
+    libgmp-dev \
+    libssl-dev \
+    libsqlite3-dev
 
 RUN git clone --branch v2.1.0 --depth 1 https://gitlab.com/hagrid-keyserver/hagrid.git /build
 
-# Build hagrid for target architecture
-ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
-RUN cd /build/ \
-  && if [ "$TARGETARCH" = "arm64" ]; then \
-       PKG_CONFIG_ALLOW_CROSS=1 \
-       PKG_CONFIG_PATH_aarch64_unknown_linux_gnu=/usr/lib/aarch64-linux-gnu/pkgconfig \
-       PKG_CONFIG_SYSROOT_DIR=/ \
-       CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc \
-       CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++ \
-       cargo build --release --target aarch64-unknown-linux-gnu \
-       && mkdir -p target/release \
-       && cp target/aarch64-unknown-linux-gnu/release/hagrid target/release/; \
-     else \
-       cargo build --release; \
-     fi
+# Build hagrid for the target architecture
+# xx-cargo sets CC, PKG_CONFIG, CARGO_TARGET_*_LINKER, and calls rustup target add automatically
+WORKDIR /build
+RUN xx-cargo build --release \
+    && xx-verify target/$(xx-cargo --print-target-triple)/release/hagrid \
+    && cp target/$(xx-cargo --print-target-triple)/release/hagrid /usr/local/bin/hagrid
 
 FROM debian:stable-slim
 
@@ -106,7 +96,7 @@ RUN groupadd abc \
   && mkdir -p /app /default /home/abc \
   && chown -R abc:abc /app /default /home/abc
 
-COPY --from=builder /build/target/release/hagrid /usr/local/bin/hagrid
+COPY --from=builder /usr/local/bin/hagrid /usr/local/bin/hagrid
 COPY --from=builder --chown=abc:abc /build/dist/ /app/dist/
 
 # [branding] remove about for now
